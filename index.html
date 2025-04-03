@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Metadatos -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego Snake Mejorado</title>
+
+    <!-- Enlace a Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Estilos Personalizados -->
+    <style>
+        /* Estilo General */
+         body {
+            background: url('fondo.png');
+            background-size: cover; /* Asegura que la imagen cubra toda el área disponible */
+            background-position: center; /* Centra la imagen de fondo */
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Contenedor de Juego */
+        .game-container {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 40px;
+            width: 700px;
+            position: relative;
+            transition: transform 1s ease-in-out;
+        }
+
+        /* Canvas */
+        canvas {
+            background-color: #000;
+            border: 3px solid #ff0099;
+            display: block;
+            margin: 10px auto;
+        }
+
+        /* Botones */
+       /* From Uiverse.io by Mike11jr */ 
+.btn {
+ padding: 1.1em 2em;
+ background: none;
+ border: 2px solid #fff;
+ font-size: 15px;
+ color: #131313;
+ cursor: pointer;
+ position: relative;
+ overflow: hidden;
+ transition: all 0.3s;
+ border-radius: 12px;
+ background-color: #ecd448;
+ font-weight: bolder;
+ box-shadow: 0 2px 0 2px #000;
+}
+
+.btn:before {
+ content: "";
+ position: absolute;
+ width: 100px;
+ height: 120%;
+ background-color: #ff6700;
+ top: 50%;
+ transform: skewX(30deg) translate(-150%, -50%);
+ transition: all 0.5s;
+}
+
+.btn:hover {
+ background-color: #4cc9f0;
+ color: #fff;
+ box-shadow: 0 2px 0 2px #0d3b66;
+}
+
+.btn:hover::before {
+ transform: skewX(30deg) translate(150%, -50%);
+ transition-delay: 0.1s;
+}
+
+.btn:active {
+ transform: scale(0.9);
+}
+
+        /* Contenedor del Nuevo Juego */
+        .new-game-container {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            padding: 40px;
+            color: #fff;
+            text-align: center;
+        }
+
+        /* Publicidad */
+        .advertisement {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 200px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            font-weight: bold;
+        }
+
+        /* Publicidad Izquierda */
+        .advertisement.left {
+            left: 0;
+        }
+
+        /* Publicidad Derecha */
+        .advertisement.right {
+            right: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Publicidad antes del juego
+    <div class="advertisement right">
+        <p>¡Compra nuestros productos y mejora tu experiencia de juego! 🛍️</p>
+    </div> -->
+
+    <!-- Encabezado -->
+    <header class="py-4">
+        <br>
+        <h1 class="fw-bold">🐍 Juego Snake 🎶</h1>
+        <p>¡Diviértete con el clásico juego de la serpiente! 🤙</p>
+    </header>
+
+    <button id="otherGameButton" class="btn btn-juego me-2">Otro Juego</button>
+    <br>
+
+    <!-- Contenedor del Juego Principal -->
+    <div class="game-container" id="gameContainer">
+        <h2>Juego Snake 🐍</h2>
+        <!-- Botones -->
+        <button id="startButton" class="btn btn-juego me-2">Iniciar Juego</button>
+        <button id="restartButton" class="btn btn-juego me-2">Reiniciar Juego</button>
+
+        <!-- Canvas del Juego -->
+        <canvas id="snakeGame" width="500" height="300"></canvas>
+        <p>Usa las flechas del teclado para jugar.</p>
+    </div>
+
+    <!-- Contenedor del Nuevo Juego -->
+    <div class="new-game-container" id="newGameContainer">
+        <h2>🎲 Nuevo Juego en Desarrollo 🎮</h2>
+        <p>Pronto tendrás otro juego aquí...</p>
+        <button id="backButton" class="btn btn-juego">Volver al Snake</button>
+    </div>
+
+    <!-- Publicidad al final del juego -->
+    <!-- <div class="advertisement left">
+        <p>¡No te olvides de nuestras ofertas especiales! 🎁</p>
+    </div> -->
+
+    <!-- Pie de Página -->
+    <footer class="py-4">
+        <p>&copy; 2024 Juego Snake xd. 🎮</p>
+    </footer>
+
+    <!-- Script del Juego -->
+    <script>
+        const gameContainer = document.getElementById("gameContainer");
+        const newGameContainer = document.getElementById("newGameContainer");
+        const otherGameButton = document.getElementById("otherGameButton");
+        const backButton = document.getElementById("backButton");
+
+        const canvas = document.getElementById("snakeGame");
+        const ctx = canvas.getContext("2d");
+
+        const startButton = document.getElementById("startButton");
+        const restartButton = document.getElementById("restartButton");
+
+        // Variables del juego
+        const box = 20;
+        let snake = [];
+        let food;
+        let direction = "RIGHT";
+        let score = 0;
+        let gameInterval;
+
+        // Sonidos y música
+        const eatSound = new Audio("eat.mp3");
+        const gameOverSound = new Audio("game-over.mp3");
+        const backgroundMusic = new Audio("background-music.mp3");
+        backgroundMusic.loop = true;
+
+        // Imágenes para la comida
+        const foodImage = new Image();
+        foodImage.src = "comida.png"; // Cambia la ruta de la imagen según sea necesario
+
+        // Función para iniciar el juego
+        function startGame() {
+            resetGame();
+            backgroundMusic.play();
+            gameInterval = setInterval(draw, 100);
+        }
+
+        // Función para reiniciar el juego
+        function resetGame() {
+            clearInterval(gameInterval);
+            snake = [{ x: 5 * box, y: 5 * box }];
+            score = 0;
+            direction = "RIGHT";
+            spawnFood();
+            backgroundMusic.currentTime = 0;
+            backgroundMusic.play();
+        }
+
+        // Generar comida
+        function spawnFood() {
+            food = {
+                x: Math.floor(Math.random() * 15) * box,
+                y: Math.floor(Math.random() * 15) * box
+            };
+        }
+
+        // Detectar teclas
+        document.addEventListener("keydown", (event) => {
+    event.preventDefault(); // Prevenir el desplazamiento de la página al presionar una tecla
+
+    if (event.keyCode === 37 && direction !== "RIGHT") direction = "LEFT";
+    if (event.keyCode === 38 && direction !== "DOWN") direction = "UP";
+    if (event.keyCode === 39 && direction !== "LEFT") direction = "RIGHT";
+    if (event.keyCode === 40 && direction !== "UP") direction = "DOWN";
+});
+
+        // Dibujar el juego
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar comida con imagen
+            const foodSize = 30; // Tamaño de la comida agrandado (puedes ajustar el valor)
+            ctx.drawImage(foodImage, food.x, food.y, foodSize, foodSize);
+
+
+            // Dibujar serpiente con color
+            ctx.fillStyle = "#00FF00"; // Color de la serpiente
+            snake.forEach((segment) => {
+                ctx.fillRect(segment.x, segment.y, box, box);
+            });
+
+            // Mover la serpiente
+            let headX = snake[0].x;
+            let headY = snake[0].y;
+
+            if (direction === "LEFT") headX -= box;
+            if (direction === "UP") headY -= box;
+            if (direction === "RIGHT") headX += box;
+            if (direction === "DOWN") headY += box;
+
+            // Verificar colisión con comida
+            if (headX === food.x && headY === food.y) {
+                score++;
+                eatSound.play();
+                spawnFood();
+            } else {
+                snake.pop();
+            }
+
+            // Nueva cabeza
+            const newHead = { x: headX, y: headY };
+
+            // Verificar colisión con bordes o la serpiente misma
+            if (headX < 0 || headY < 0 || headX >= canvas.width || headY >= canvas.height || collision(newHead, snake)) {
+                gameOverSound.play();
+                backgroundMusic.pause();
+                clearInterval(gameInterval);
+                alert(`¡Game Over! Puntaje: ${score}`);
+                return;
+            }
+
+            snake.unshift(newHead);
+        }
+
+        // Verificar colisiones
+        function collision(head, body) {
+            return body.some(segment => segment.x === head.x && segment.y === head.y);
+        }
+
+        // Mostrar otro juego
+        otherGameButton.addEventListener("click", () => {
+            gameContainer.style.transform = "translateX(-100%)";
+            newGameContainer.style.display = "block";
+            newGameContainer.style.left = "0";
+        });
+
+        // Volver al juego Snake
+        backButton.addEventListener("click", () => {
+            gameContainer.style.transform = "translateX(0)";
+            newGameContainer.style.display = "none";
+        });
+
+        // Eventos de botones
+        startButton.addEventListener("click", startGame);
+        restartButton.addEventListener("click", startGame);
+
+        // Generar comida inicial
+        spawnFood();
+    </script>
+</body>
+</html>

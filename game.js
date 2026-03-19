@@ -5,13 +5,11 @@ const maxScoreDisplay = document.getElementById('maxScore');
 const restartButton = document.getElementById('restartButton');
 const bgMusic = document.getElementById('bgMusic');
 
-// Sonidos
-const eatSound = new Audio('eat.mp3'); 
-const gameOverSound = new Audio('game-over.mp3'); 
+const eatSound = new Audio('eat.mp3');
+const gameOverSound = new Audio('game-over.mp3');
 
-// Configuración de la dificultad
-let gameSpeed = 100; // Intervalo de tiempo en milisegundos
-let snakeSpeed = 20; // Velocidad de la serpiente en píxeles
+let gameSpeed = 100;
+let snakeSpeed = 20;
 
 let snake;
 let direction;
@@ -21,7 +19,6 @@ let gameOver;
 let objects;
 let difficultySelected = false;
 
-// Cargar puntaje máximo desde localStorage
 let maxScore = localStorage.getItem('maxScore') || 0;
 maxScoreDisplay.textContent = `Puntaje Máximo: ${maxScore}`;
 
@@ -44,13 +41,11 @@ function randomFoodPosition() {
 }
 
 function generateFakeObjects() {
-    // Crear objetos falsos (por ejemplo, bloques) en posiciones aleatorias
     let fakeObjects = [];
     for (let i = 0; i < 5; i++) {
         fakeObjects.push({
             x: Math.floor(Math.random() * (canvas.width / snakeSpeed)) * snakeSpeed,
-            y: Math.floor(Math.random() * (canvas.height / snakeSpeed)) * snakeSpeed,
-            description: "¡Esto no te ayuda! Evítalo."
+            y: Math.floor(Math.random() * (canvas.height / snakeSpeed)) * snakeSpeed
         });
     }
     return fakeObjects;
@@ -100,13 +95,6 @@ function checkCollision() {
             gameOverSound.play();
         }
     }
-
-    objects.forEach(obj => {
-        if (snake[0].x === obj.x && snake[0].y === obj.y) {
-            // Si colisiona con un objeto falso, mostrar su descripción
-            alert(obj.description);
-        }
-    });
 }
 
 function updateScore() {
@@ -114,7 +102,7 @@ function updateScore() {
     if (score > maxScore) {
         maxScore = score;
         maxScoreDisplay.textContent = `Puntaje Máximo: ${maxScore}`;
-        localStorage.setItem('maxScore', maxScore);  // Guardar en localStorage
+        localStorage.setItem('maxScore', maxScore);
     }
 }
 
@@ -123,7 +111,7 @@ function gameLoop() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = 'white';
         ctx.font = '30px Arial';
-        ctx.fillText('¡Game Over!', canvas.width / 4, canvas.height / 2);
+        ctx.fillText('Game Over!', canvas.width / 4, canvas.height / 2);
         restartButton.classList.remove('hidden');
         return;
     }
@@ -137,7 +125,6 @@ function gameLoop() {
     updateScore();
 }
 
-// Manejar teclas para el movimiento de la serpiente
 document.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowUp' && direction.y === 0) {
         direction = { x: 0, y: -snakeSpeed };
@@ -150,7 +137,6 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-// Funciones para el control táctil
 let touchStartX = 0;
 let touchStartY = 0;
 let touchEndX = 0;
@@ -164,7 +150,6 @@ document.addEventListener('touchstart', (event) => {
 document.addEventListener('touchend', (event) => {
     touchEndX = event.changedTouches[0].clientX;
     touchEndY = event.changedTouches[0].clientY;
-
     handleSwipe();
 });
 
@@ -172,51 +157,42 @@ function handleSwipe() {
     const deltaX = touchEndX - touchStartX;
     const deltaY = touchEndY - touchStartY;
 
-    // Si el movimiento es principalmente horizontal
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
         if (deltaX > 0 && direction.x === 0) {
-            // Deslizar a la derecha
             direction = { x: snakeSpeed, y: 0 };
         } else if (deltaX < 0 && direction.x === 0) {
-            // Deslizar a la izquierda
             direction = { x: -snakeSpeed, y: 0 };
         }
-    } 
-    // Si el movimiento es principalmente vertical
-    else {
+    } else {
         if (deltaY > 0 && direction.y === 0) {
-            // Deslizar hacia abajo
             direction = { x: 0, y: snakeSpeed };
         } else if (deltaY < 0 && direction.y === 0) {
-            // Deslizar hacia arriba
             direction = { x: 0, y: -snakeSpeed };
         }
     }
 }
 
-// Botón de reiniciar
 restartButton.addEventListener('click', () => {
     initGame();
-    setInterval(gameLoop, gameSpeed); // Reinicia el ciclo del juego
+    setInterval(gameLoop, gameSpeed);
 });
 
-// Elegir dificultad
 document.getElementById('easy').addEventListener('click', () => {
-    gameSpeed = 200; // Velocidad más lenta
+    gameSpeed = 200;
     snakeSpeed = 20;
     difficultySelected = true;
     startGame();
 });
 
 document.getElementById('medium').addEventListener('click', () => {
-    gameSpeed = 100; // Velocidad media
+    gameSpeed = 100;
     snakeSpeed = 20;
     difficultySelected = true;
     startGame();
 });
 
 document.getElementById('hard').addEventListener('click', () => {
-    gameSpeed = 50; // Velocidad rápida
+    gameSpeed = 50;
     snakeSpeed = 20;
     difficultySelected = true;
     startGame();
@@ -224,7 +200,7 @@ document.getElementById('hard').addEventListener('click', () => {
 
 function startGame() {
     if (difficultySelected) {
-        bgMusic.play(); // Reproducir música de fondo
+        bgMusic.play();
         initGame();
         setInterval(gameLoop, gameSpeed);
     }

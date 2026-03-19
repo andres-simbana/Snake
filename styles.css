@@ -4,7 +4,6 @@ body {
     font-family: Arial, sans-serif;
 }
 
-/* Contenedor Principal */
 .game-container {
     background-color: rgba(0, 0, 0, 0.7);
     border-radius: 10px;
@@ -17,12 +16,10 @@ body {
     box-shadow: 0 4px 8px rgba(255, 255, 255, 0.3);
 }
 
-/* Títulos */
 h1, h2 {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Botones */
 .btn-juego {
     background-color: #ff0099;
     border: none;
@@ -34,7 +31,6 @@ h1, h2 {
     color: #000;
 }
 
-/* Juego de Snake */
 canvas {
     background-color: #000;
     border: 2px solid #ff0099;
